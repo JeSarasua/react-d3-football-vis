@@ -10,7 +10,7 @@ import {
   get_YAxis,
 } from "../d3/d3-helpers";
 
-export default function LineChart({ data, width, height, margin }) {
+export default function LineChart({ data, margin }) {
   const [tooltip, setTooltip] = useState({
     visible: false,
     test: "",
@@ -18,24 +18,38 @@ export default function LineChart({ data, width, height, margin }) {
     y: 0,
   });
 
-  const innerWidth = width - margin.left - margin.right;
-  const innerHeight = height - margin.top - margin.bottom;
+  const VIEWBOX_WIDTH = 1920;
+  const VIEWBOX_HEIGHT = 930;
+
+  const innerWidth = VIEWBOX_WIDTH - margin.left - margin.right;
+  const innerHeight = VIEWBOX_HEIGHT - margin.top - margin.bottom;
 
   const parsedData = parseToFantasyData(data);
   const groupedData = groupParsedDataBasedOnProperty(parsedData, "Position");
 
-  const maxLength = Math.max(
+  const maxNumPosPlayers = Math.max(
     ...Array.from(groupedData.values()).map((arr) => arr.length)
   );
 
-  const xScale = get_xScale(maxLength, innerWidth);
+  const xScale = get_xScale(maxNumPosPlayers, innerWidth);
   const yScale = get_yScale(parsedData, innerHeight);
   const lineGenerator = generateLine(xScale, yScale);
 
   return (
     <>
-      <svg width={width} height={height}>
+      <svg viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}>
         <g transform={`translate(${margin.left},${margin.top})`}>
+          {/* Title */}
+          <text
+            x={innerWidth / 2}
+            y={margin.top}
+            fill="white"
+            fontSize={48}
+            textAnchor="middle"
+          >
+            Fantasy Football Scoring
+          </text>
+
           {/* X Axis */}
           <g
             transform={`translate(0,${innerHeight})`}
@@ -84,7 +98,7 @@ export default function LineChart({ data, width, height, margin }) {
                 key={`${position}-${i}`}
                 cx={xScale(i + 1)}
                 cy={yScale(d.Points)}
-                r={3}
+                r={6}
                 fill="white"
                 style={{ cursor: "pointer" }}
                 onMouseEnter={(e) => {

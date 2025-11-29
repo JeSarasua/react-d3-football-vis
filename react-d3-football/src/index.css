@@ -63,10 +63,3 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
-
-.chart-container {
-  display: flex;
-  justify-content: center; /* horizontal centering */
-  align-items: center; /* vertical centering */
-  height: 100vh; /* optional: full viewport height */
-}
