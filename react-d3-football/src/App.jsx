@@ -1,4 +1,3 @@
-import "./App.css";
 import LineChart from "./components/line-chart";
 import { rawData } from "./raw-data";
 
