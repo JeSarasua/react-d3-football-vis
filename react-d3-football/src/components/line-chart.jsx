@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { PlayerTooltip } from "./player-tooltip";
+import { PositionFilter } from "./position-filter";
 import {
   parseToFantasyData,
   groupParsedDataBasedOnProperty,
@@ -17,6 +18,13 @@ export default function LineChart({ data, margin }) {
     x: 0,
     y: 0,
   });
+
+  const [showPosition, setShowPosition] = useState(
+    new Map([
+      ["RB", true],
+      ["WR", true],
+    ])
+  );
 
   const VIEWBOX_WIDTH = 1920;
   const VIEWBOX_HEIGHT = 930;
@@ -80,48 +88,66 @@ export default function LineChart({ data, margin }) {
             </text>
           </g>
 
-          {/* Line Path */}
-          {Array.from(groupedData.entries()).map(([position, players]) => (
-            <path
-              key={position}
-              d={lineGenerator(players)}
-              fill="none"
-              stroke={position === "RB" ? "red" : "blue"}
-              strokeWidth={2}
-            />
-          ))}
-
-          {/* Points */}
-          {Array.from(groupedData.entries()).map(([position, players]) =>
-            players.map((d, i) => (
-              <circle
-                key={`${position}-${i}`}
-                cx={xScale(i + 1)}
-                cy={yScale(d.Points)}
-                r={6}
-                fill="white"
-                style={{ cursor: "pointer" }}
-                onMouseEnter={(e) => {
-                  setTooltip({
-                    visible: true,
-                    text: `${d.Name} -> ${d.Points} #${i}`,
-                    x: e.clientX,
-                    y: e.clientY,
-                  });
-                }}
-                onMouseLeave={() => {
-                  setTooltip({
-                    visible: false,
-                    text: "",
-                    x: 0,
-                    y: 0,
-                  });
-                }}
+          {/* Line */}
+          {Array.from(groupedData.entries())
+            .filter(([position]) => showPosition.get(position))
+            .map(([position, players]) => (
+              <path
+                key={position}
+                d={lineGenerator(players)}
+                fill="none"
+                stroke={position === "RB" ? "red" : "blue"}
+                strokeWidth={2}
               />
-            ))
-          )}
+            ))}
+
+          {/* Dots on the Line */}
+          {Array.from(groupedData.entries())
+            .filter(([position]) => showPosition.get(position))
+            .map(([position, players]) =>
+              players.map((d, i) => (
+                <circle
+                  key={`${position}-${i}`}
+                  cx={xScale(i + 1)}
+                  cy={yScale(d.Points)}
+                  r={6}
+                  fill="white"
+                  style={{ cursor: "pointer" }}
+                  onMouseEnter={(e) => {
+                    setTooltip({
+                      visible: true,
+                      text: `${d.Name} -> ${d.Points} #${i}`,
+                      x: e.clientX,
+                      y: e.clientY,
+                    });
+                  }}
+                  onMouseLeave={() => {
+                    setTooltip({
+                      visible: false,
+                      text: "",
+                      x: 0,
+                      y: 0,
+                    });
+                  }}
+                />
+              ))
+            )}
         </g>
       </svg>
+      <div
+        style={{
+          position: "absolute",
+          top: 10,
+          right: 10,
+          backgroundColor: "rgba(0,0,0,0.5)",
+          padding: 8,
+          borderRadius: 4,
+          display: "flex",
+          gap: "10px",
+        }}
+      >
+        <PositionFilter setShowPosition={setShowPosition} />
+      </div>
       {tooltip.visible && <PlayerTooltip tooltip={tooltip} />}
     </>
   );
